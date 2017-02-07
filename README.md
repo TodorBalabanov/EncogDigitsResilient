@@ -1,2 +1,2 @@
-# EncogDigitsResilient
-Encog digits classification resilient training example with fading sine as activation function. Edit New 
+# EncogXORResilient
+Encog XOR resilient example with fading sine as activation function.
