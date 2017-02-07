@@ -29,11 +29,11 @@ public class DigitsResilient {
 
 	private static int INPUT_SIZE = 256;
 
-	private static int HIDDEN_SIZE = 300;
+	private static int HIDDEN_SIZE = 11;
 
 	private static int OUTPUT_SIZE = 10;
 
-	private static int PRUNE_ITERATIONS = 100;
+	private static int PRUNE_ITERATIONS = 300;
 
 	private static int MIN_HIDDEN = 1;
 
@@ -104,14 +104,14 @@ public class DigitsResilient {
 		}
 	}
 
-	private static BasicNetwork prune(String title, ActivationFadingSin activation, NeuralDataSet training,
+	private static BasicNetwork prune(String title, ActivationFunction activation, NeuralDataSet training,
 			int iterations, int hiddenMin, int hiddenMax) {
 		FeedForwardPattern pattern = new FeedForwardPattern();
 		pattern.setInputNeurons(training.getInputSize());
 		pattern.setOutputNeurons(training.getIdealSize());
 		pattern.setActivationFunction(activation);
 
-		PruneIncremental prune = new PruneIncremental(training, pattern, iterations, 10, 10,
+		PruneIncremental prune = new PruneIncremental(training, pattern, iterations, 3, 10,
 				new ConsoleStatusReportable());
 
 		prune.addHiddenLayer(hiddenMin, hiddenMax);
@@ -160,9 +160,18 @@ public class DigitsResilient {
 	}
 
 	public static void main(final String args[]) {
-		BasicNetwork net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS,
+		BasicNetwork net = null;
+		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
+				MAX_HIDDEN);
+		net = prune("Sigmoid", new ActivationSigmoid(), ZERO_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
+		net = prune("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), MINUS_PLUS_ONE_TRAINING,
+				PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
+		net = prune("Logarithm", new ActivationLOG(), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
+				MAX_HIDDEN);
+		net = prune("Hyperbolic Tangent", new ActivationTANH(), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
+				MAX_HIDDEN);
+		net = prune("Elliott Symmetric", new ActivationElliottSymmetric(), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS,
 				MIN_HIDDEN, MAX_HIDDEN);
-		System.out.println(net);
 
 		Object statistics[] = {};
 		for (long g = 0; g < NUMBER_OF_EXPERIMENTS; g++) {
