@@ -2,6 +2,7 @@ package eu.veldsoft.digits.resilient;
 
 import java.io.FileInputStream;
 
+import org.encog.ConsoleStatusReportable;
 import org.encog.engine.network.activation.ActivationBipolarSteepenedSigmoid;
 import org.encog.engine.network.activation.ActivationElliottSymmetric;
 import org.encog.engine.network.activation.ActivationFunction;
@@ -18,6 +19,8 @@ import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.Train;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
+import org.encog.neural.pattern.FeedForwardPattern;
+import org.encog.neural.prune.PruneIncremental;
 import org.encog.util.csv.CSVFormat;
 import org.encog.util.csv.ReadCSV;
 
@@ -29,6 +32,12 @@ public class DigitsResilient {
 	private static int HIDDEN_SIZE = 300;
 
 	private static int OUTPUT_SIZE = 10;
+
+	private static int PRUNE_ITERATIONS = 100;
+
+	private static int MIN_HIDDEN = 1;
+
+	private static int MAX_HIDDEN = INPUT_SIZE + OUTPUT_SIZE;
 
 	private static final long MAX_TRAINING_TIME = 10000;
 
@@ -95,8 +104,24 @@ public class DigitsResilient {
 		}
 	}
 
-	private static Object[] experiment(String title, ActivationFunction activation, NeuralDataSet training,
-			double epsilon) {
+	private static BasicNetwork prune(String title, ActivationFadingSin activation, NeuralDataSet training,
+			int iterations, int hiddenMin, int hiddenMax) {
+		FeedForwardPattern pattern = new FeedForwardPattern();
+		pattern.setInputNeurons(training.getInputSize());
+		pattern.setOutputNeurons(training.getIdealSize());
+		pattern.setActivationFunction(activation);
+
+		PruneIncremental prune = new PruneIncremental(training, pattern, iterations, 10, 10,
+				new ConsoleStatusReportable());
+
+		prune.addHiddenLayer(hiddenMin, hiddenMax);
+
+		prune.process();
+
+		return prune.getBestNetwork();
+	}
+
+	private static Object[] train(String title, ActivationFunction activation, NeuralDataSet training, double epsilon) {
 		Object result[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(0) };
 
 		BasicNetwork network = new BasicNetwork();
@@ -135,22 +160,24 @@ public class DigitsResilient {
 	}
 
 	public static void main(final String args[]) {
+		BasicNetwork net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS,
+				MIN_HIDDEN, MAX_HIDDEN);
+		System.out.println(net);
+
 		Object statistics[] = {};
 		for (long g = 0; g < NUMBER_OF_EXPERIMENTS; g++) {
-			statistics = experiment("Fading Sine", new ActivationFadingSin(0), MINUS_PLUS_ONE_TRAINING,
+			statistics = train("Fading Sine", new ActivationFadingSin(0), MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
+			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
+			statistics = train("Sigmoid", new ActivationSigmoid(), ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
+			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
+			statistics = train("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = experiment("Sigmoid", new ActivationSigmoid(), ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
+			statistics = train("Logarithm", new ActivationLOG(), MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = experiment("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), MINUS_PLUS_ONE_TRAINING,
-					TARGET_ANN_ERROR);
+			statistics = train("Hyperbolic Tangent", new ActivationTANH(), MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = experiment("Logarithm", new ActivationLOG(), MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = experiment("Hyperbolic Tangent", new ActivationTANH(), MINUS_PLUS_ONE_TRAINING,
-					TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = experiment("Elliott Symmetric", new ActivationElliottSymmetric(), MINUS_PLUS_ONE_TRAINING,
+			statistics = train("Elliott Symmetric", new ActivationElliottSymmetric(), MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 		}
