@@ -29,7 +29,7 @@ public class DigitsResilient {
 
 	private static int INPUT_SIZE = 256;
 
-	private static int HIDDEN_SIZE = 11;
+	private static int HIDDEN_SIZE = 175;
 
 	private static int OUTPUT_SIZE = 10;
 
