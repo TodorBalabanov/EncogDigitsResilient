@@ -34,7 +34,7 @@ public class DigitsResilient {
 
 	private static final int HIDDEN_SIZE = INPUT_SIZE + OUTPUT_SIZE;
 
-	private static final int PRUNE_ITERATIONS = 300;
+	private static final int PRUNE_ITERATIONS = 900;
 
 	private static final int MIN_HIDDEN = 1;
 
@@ -44,7 +44,7 @@ public class DigitsResilient {
 
 	private static final int MAX_EPOCHS = 1000;
 
-	private static final double TARGET_ANN_ERROR = 0.3;
+	private static final double TARGET_ANN_ERROR = 0.1;
 
 	private static final NeuralDataSet ZERO_ONE_TRAINING = new BasicNeuralDataSet();
 
@@ -112,7 +112,7 @@ public class DigitsResilient {
 		pattern.setOutputNeurons(training.getIdealSize());
 		pattern.setActivationFunction(activation);
 
-		PruneIncremental prune = new PruneIncremental(training, pattern, iterations, 3, 10,
+		PruneIncremental prune = new PruneIncremental(training, pattern, iterations, 9, 30,
 				new ConsoleStatusReportable());
 
 		prune.addHiddenLayer(hiddenMin, hiddenMax);
@@ -167,7 +167,7 @@ public class DigitsResilient {
 		return result;
 	}
 
-	private static void prone() {
+	private static void prune() {
 		BasicNetwork net = null;
 		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
 				MAX_HIDDEN);
@@ -212,7 +212,7 @@ public class DigitsResilient {
 	}
 
 	public static void main(final String args[]) {
-		// prone();
-		train();
+		prune();
+		// train();
 	}
 }
