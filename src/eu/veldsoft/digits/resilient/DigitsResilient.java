@@ -163,6 +163,8 @@ public class DigitsResilient {
 		BasicNetwork net = null;
 		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
 				MAX_HIDDEN);
+		net = prune("Exponent Regulated Sine", new ActivationExponentRegulatedSin(1), MINUS_PLUS_ONE_TRAINING,
+				PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
 		net = prune("Sigmoid", new ActivationSigmoid(), ZERO_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
 		net = prune("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), MINUS_PLUS_ONE_TRAINING,
 				PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
@@ -176,6 +178,9 @@ public class DigitsResilient {
 		Object statistics[] = {};
 		for (long g = 0; g < NUMBER_OF_EXPERIMENTS; g++) {
 			statistics = train("Fading Sine", new ActivationFadingSin(0), MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
+			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
+			statistics = train("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0),
+					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 			statistics = train("Sigmoid", new ActivationSigmoid(), ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
