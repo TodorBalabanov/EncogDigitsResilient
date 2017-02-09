@@ -1,6 +1,7 @@
 package eu.veldsoft.digits.resilient;
 
 import java.io.FileInputStream;
+import java.util.Date;
 
 import org.encog.ConsoleStatusReportable;
 import org.encog.engine.network.activation.ActivationBipolarSteepenedSigmoid;
@@ -25,34 +26,34 @@ import org.encog.util.csv.CSVFormat;
 import org.encog.util.csv.ReadCSV;
 
 public class DigitsResilient {
-	private static int NUMBER_OF_EXPERIMENTS = 30;
+	private static final int NUMBER_OF_EXPERIMENTS = 30;
 
-	private static int INPUT_SIZE = 256;
+	private static final int INPUT_SIZE = 256;
 
-	private static int HIDDEN_SIZE = 175;
+	private static final int OUTPUT_SIZE = 10;
 
-	private static int OUTPUT_SIZE = 10;
+	private static final int HIDDEN_SIZE = INPUT_SIZE + OUTPUT_SIZE;
 
-	private static int PRUNE_ITERATIONS = 300;
+	private static final int PRUNE_ITERATIONS = 300;
 
-	private static int MIN_HIDDEN = 1;
+	private static final int MIN_HIDDEN = 1;
 
-	private static int MAX_HIDDEN = INPUT_SIZE + OUTPUT_SIZE;
+	private static final int MAX_HIDDEN = INPUT_SIZE + OUTPUT_SIZE;
 
-	private static final long MAX_TRAINING_TIME = 10000;
+	private static final long MAX_TRAINING_TIME = 100000;
 
 	private static final int MAX_EPOCHS = 1000;
 
-	private static final double TARGET_ANN_ERROR = 0.1;
+	private static final double TARGET_ANN_ERROR = 0.3;
 
 	private static final NeuralDataSet ZERO_ONE_TRAINING = new BasicNeuralDataSet();
 
 	private static final NeuralDataSet MINUS_PLUS_ONE_TRAINING = new BasicNeuralDataSet();
 
-	/*
-	 * It is used for time measurement calibration.
-	 */
 	static {
+		/*
+		 * It is used for time measurement calibration.
+		 */
 		BasicNetwork network = new BasicNetwork();
 		network.addLayer(new BasicLayer(new ActivationSigmoid(), true, INPUT_SIZE));
 		network.addLayer(new BasicLayer(new ActivationSigmoid(), true, HIDDEN_SIZE));
@@ -125,16 +126,22 @@ public class DigitsResilient {
 			NeuralDataSet training, double epsilon) {
 		Object result[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(0) };
 
+		ActivationFunction activations[] = { activation, activation, activation };
+
+		if (activation instanceof ActivationFadingSin) {
+			activations[0] = new ActivationFadingSin(INPUT_SIZE);
+			activations[1] = new ActivationFadingSin(optimalHiddenSize);
+			activations[2] = new ActivationFadingSin(OUTPUT_SIZE);
+		} else if (activation instanceof ActivationExponentRegulatedSin) {
+			activations[0] = new ActivationExponentRegulatedSin(INPUT_SIZE);
+			activations[1] = new ActivationExponentRegulatedSin(optimalHiddenSize);
+			activations[2] = new ActivationExponentRegulatedSin(OUTPUT_SIZE);
+		}
+
 		BasicNetwork network = new BasicNetwork();
-		network.addLayer(new BasicLayer(
-				activation instanceof ActivationFadingSin ? new ActivationFadingSin(INPUT_SIZE) : activation, true,
-				INPUT_SIZE));
-		network.addLayer(new BasicLayer(
-				activation instanceof ActivationFadingSin ? new ActivationFadingSin(optimalHiddenSize) : activation,
-				true, optimalHiddenSize));
-		network.addLayer(new BasicLayer(
-				activation instanceof ActivationFadingSin ? new ActivationFadingSin(OUTPUT_SIZE) : activation, false,
-				OUTPUT_SIZE));
+		network.addLayer(new BasicLayer(activations[0], true, INPUT_SIZE));
+		network.addLayer(new BasicLayer(activations[1], true, optimalHiddenSize));
+		network.addLayer(new BasicLayer(activations[2], false, OUTPUT_SIZE));
 		network.getStructure().finalizeStructure();
 		network.reset();
 
@@ -160,7 +167,7 @@ public class DigitsResilient {
 		return result;
 	}
 
-	public static void main(final String args[]) {
+	private static void prone() {
 		BasicNetwork net = null;
 		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
 				MAX_HIDDEN);
@@ -175,29 +182,37 @@ public class DigitsResilient {
 				MAX_HIDDEN);
 		net = prune("Elliott Symmetric", new ActivationElliottSymmetric(), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS,
 				MIN_HIDDEN, MAX_HIDDEN);
+	}
 
+	private static void train() {
 		Object statistics[] = {};
 		for (long g = 0; g < NUMBER_OF_EXPERIMENTS; g++) {
-			statistics = train("Fading Sine", new ActivationFadingSin(0), HIDDEN_SIZE, MINUS_PLUS_ONE_TRAINING,
+			System.out.println(new Date());
+
+			statistics = train("Fading Sine", new ActivationFadingSin(0), 106, MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), HIDDEN_SIZE,
+			statistics = train("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 120,
 					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Sigmoid", new ActivationSigmoid(), HIDDEN_SIZE, ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
+			statistics = train("Sigmoid", new ActivationSigmoid(), 169, ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), HIDDEN_SIZE,
-					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Logarithm", new ActivationLOG(), HIDDEN_SIZE, MINUS_PLUS_ONE_TRAINING,
+			statistics = train("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 28, MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Hyperbolic Tangent", new ActivationTANH(), HIDDEN_SIZE, MINUS_PLUS_ONE_TRAINING,
+			statistics = train("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
+			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
+			statistics = train("Hyperbolic Tangent", new ActivationTANH(), 45, MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train("Elliott Symmetric", new ActivationElliottSymmetric(), HIDDEN_SIZE,
-					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
+			statistics = train("Elliott Symmetric", new ActivationElliottSymmetric(), 208, MINUS_PLUS_ONE_TRAINING,
+					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 		}
+	}
+
+	public static void main(final String args[]) {
+		// prone();
+		train();
 	}
 }
