@@ -237,15 +237,15 @@ public class DigitsResilient {
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 			statistics = train1("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 154,
+			statistics = train1("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188,
 					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 			statistics = train1("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Hyperbolic Tangent", new ActivationTANH(), 45, MINUS_PLUS_ONE_TRAINING,
+			statistics = train1("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Elliott Symmetric", new ActivationElliottSymmetric(), 208, MINUS_PLUS_ONE_TRAINING,
+			statistics = train1("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING,
 					TARGET_ANN_ERROR);
 			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
 		}
@@ -261,14 +261,14 @@ public class DigitsResilient {
 		System.out.println(statistics);
 		statistics = train2("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, 60, 1000 * 60);
 		System.out.println(statistics);
-		statistics = train2("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 154, MINUS_PLUS_ONE_TRAINING,
+		statistics = train2("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188, MINUS_PLUS_ONE_TRAINING,
 				60, 1000 * 60);
 		System.out.println(statistics);
 		statistics = train2("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
 		System.out.println(statistics);
-		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 45, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
+		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
 		System.out.println(statistics);
-		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 208, MINUS_PLUS_ONE_TRAINING, 60,
+		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING, 60,
 				1000 * 60);
 		System.out.println(statistics);
 	}
