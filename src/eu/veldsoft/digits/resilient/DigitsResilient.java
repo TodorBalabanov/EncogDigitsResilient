@@ -2,6 +2,7 @@ package eu.veldsoft.digits.resilient;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -255,27 +256,27 @@ public class DigitsResilient {
 		List<Object> statistics = null;
 
 		statistics = train2("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
 				MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, 60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188, MINUS_PLUS_ONE_TRAINING,
 				60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING, 60,
 				1000 * 60);
-		System.out.println(statistics);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
 	public static void main(final String args[]) {
-		prune();
+		// prune();
 		// train1();
-		// train2();
+		train2();
 	}
 }
