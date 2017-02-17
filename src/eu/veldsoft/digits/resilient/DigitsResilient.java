@@ -266,7 +266,7 @@ public class DigitsResilient {
 
 	private static void train2() {
 		final int NUMBER_OF_MEASUREMENTS = 60;
-		final long SINGLE_MEASUREMENT_MILLISECONDS = 10 * 60 * 1000 / 60;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000;
 
 		List<Object> statistics = null;
 
@@ -295,7 +295,7 @@ public class DigitsResilient {
 
 	public static void main(final String args[]) {
 		// prune();
-		train1();
-		// train2();
+		// train1();
+		train2();
 	}
 }
