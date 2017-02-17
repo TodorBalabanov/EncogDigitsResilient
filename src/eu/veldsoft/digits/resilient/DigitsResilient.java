@@ -37,18 +37,6 @@ public class DigitsResilient {
 
 	private static final int HIDDEN_SIZE = INPUT_SIZE + OUTPUT_SIZE;
 
-	private static final int PRUNE_ITERATIONS = 900;
-
-	private static final int MIN_HIDDEN = 1;
-
-	private static final int MAX_HIDDEN = INPUT_SIZE + OUTPUT_SIZE;
-
-	private static final long MAX_TRAINING_TIME = 100000;
-
-	private static final int MAX_EPOCHS = 1000;
-
-	private static final double TARGET_ANN_ERROR = 0.1;
-
 	private static final NeuralDataSet ZERO_ONE_TRAINING = new BasicNeuralDataSet();
 
 	private static final NeuralDataSet MINUS_PLUS_ONE_TRAINING = new BasicNeuralDataSet();
@@ -125,49 +113,8 @@ public class DigitsResilient {
 		return prune.getBestNetwork();
 	}
 
-	private static Object[] train1(String title, ActivationFunction activation, int optimalHiddenSize,
-			NeuralDataSet training, double epsilon) {
-		Object result[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(0) };
-
-		ActivationFunction activations[] = { activation, activation, activation };
-
-		if (activation instanceof ActivationFadingSin) {
-			activations[0] = new ActivationFadingSin(INPUT_SIZE);
-			activations[1] = new ActivationFadingSin(optimalHiddenSize);
-			activations[2] = new ActivationFadingSin(OUTPUT_SIZE);
-		} else if (activation instanceof ActivationExponentRegulatedSin) {
-			activations[0] = new ActivationExponentRegulatedSin(INPUT_SIZE);
-			activations[1] = new ActivationExponentRegulatedSin(optimalHiddenSize);
-			activations[2] = new ActivationExponentRegulatedSin(OUTPUT_SIZE);
-		}
-
-		BasicNetwork network = new BasicNetwork();
-		network.addLayer(new BasicLayer(activations[0], true, INPUT_SIZE));
-		network.addLayer(new BasicLayer(activations[1], true, optimalHiddenSize));
-		network.addLayer(new BasicLayer(activations[2], false, OUTPUT_SIZE));
-		network.getStructure().finalizeStructure();
-		network.reset();
-
-		final Train train = new ResilientPropagation(network, training);
-
-		int epoch = 0;
-		long start = System.currentTimeMillis();
-
-		do {
-			train.iteration();
-			epoch++;
-		} while (train.getError() > epsilon && (System.currentTimeMillis() - start) < MAX_TRAINING_TIME
-				&& epoch < MAX_EPOCHS);
-
-		result[1] = (System.currentTimeMillis() - start);
-		result[2] = epoch;
-		result[3] = train.getError();
-
-		return result;
-	}
-
-	private static List<Object> train2(String title, ActivationFunction activation, int optimalHiddenSize,
-			NeuralDataSet training, int numberOfStops, int stopAtTime) {
+	private static List<Object> train1(String title, ActivationFunction activation, int optimalHiddenSize,
+			NeuralDataSet training, double epsilon, long maxTrainingTime, long stopAtTime) {
 		List<Object> result = new ArrayList<>();
 
 		ActivationFunction activations[] = { activation, activation, activation };
@@ -191,6 +138,64 @@ public class DigitsResilient {
 
 		final Train train = new ResilientPropagation(network, training);
 
+		/*
+		 * Initial record.
+		 */ {
+			train.iteration();
+			Object record[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(train.getError()) };
+			result.add(record);
+		}
+
+		int epoch = 0;
+		while (epsilon < train.getError()) {
+			long start = System.currentTimeMillis();
+
+			do {
+				train.iteration();
+				epoch++;
+			} while ((System.currentTimeMillis() - start) < stopAtTime);
+
+			Object record[] = { title, Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch),
+					Double.valueOf(train.getError()) };
+			result.add(record);
+		}
+
+		return result;
+	}
+
+	private static List<Object> train2(String title, ActivationFunction activation, int optimalHiddenSize,
+			NeuralDataSet training, int numberOfStops, long stopAtTime) {
+		List<Object> result = new ArrayList<>();
+
+		ActivationFunction activations[] = { activation, activation, activation };
+
+		if (activation instanceof ActivationFadingSin) {
+			activations[0] = new ActivationFadingSin(INPUT_SIZE);
+			activations[1] = new ActivationFadingSin(optimalHiddenSize);
+			activations[2] = new ActivationFadingSin(OUTPUT_SIZE);
+		} else if (activation instanceof ActivationExponentRegulatedSin) {
+			activations[0] = new ActivationExponentRegulatedSin(INPUT_SIZE);
+			activations[1] = new ActivationExponentRegulatedSin(optimalHiddenSize);
+			activations[2] = new ActivationExponentRegulatedSin(OUTPUT_SIZE);
+		}
+
+		BasicNetwork network = new BasicNetwork();
+		network.addLayer(new BasicLayer(activations[0], true, INPUT_SIZE));
+		network.addLayer(new BasicLayer(activations[1], true, optimalHiddenSize));
+		network.addLayer(new BasicLayer(activations[2], false, OUTPUT_SIZE));
+		network.getStructure().finalizeStructure();
+		network.reset();
+
+		final Train train = new ResilientPropagation(network, training);
+
+		/*
+		 * Initial record.
+		 */ {
+			train.iteration();
+			Object record[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(train.getError()) };
+			result.add(record);
+		}
+
 		int epoch = 0;
 		for (long g = 0; g < numberOfStops; g++) {
 			long start = System.currentTimeMillis();
@@ -209,6 +214,10 @@ public class DigitsResilient {
 	}
 
 	private static void prune() {
+		final int MIN_HIDDEN = 1;
+		final int MAX_HIDDEN = INPUT_SIZE + OUTPUT_SIZE;
+		final int PRUNE_ITERATIONS = 900;
+
 		BasicNetwork net = null;
 		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
 				MAX_HIDDEN);
@@ -226,57 +235,67 @@ public class DigitsResilient {
 	}
 
 	private static void train1() {
-		Object statistics[] = {};
-		for (long g = 0; g < NUMBER_OF_EXPERIMENTS; g++) {
-			System.out.println(new Date());
+		final double TARGET_ANN_ERROR = 0.01;
+		final long MAX_TRAINING_TIME = 10 * 60 * 1000;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000 * 60;
 
-			statistics = train1("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING,
-					TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
-					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188,
-					MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING,
-					TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-			statistics = train1("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING,
-					TARGET_ANN_ERROR);
-			System.out.println(statistics[0] + "\t" + statistics[1] + "\t" + statistics[2] + "\t" + statistics[3]);
-		}
+		List<Object> statistics = null;
+
+		statistics = train1("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR,
+				MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
+				MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR, MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, TARGET_ANN_ERROR,
+				MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188, MINUS_PLUS_ONE_TRAINING,
+				TARGET_ANN_ERROR, MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR,
+				MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR,
+				MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train1("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING,
+				TARGET_ANN_ERROR, MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
 	private static void train2() {
+		final int NUMBER_OF_MEASUREMENTS = 60;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 10 * 60 * 1000 / 60;
+
 		List<Object> statistics = null;
 
-		statistics = train2("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
+		statistics = train2("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
-				MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
+				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, 60, 1000 * 60);
+		statistics = train2("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
+				SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 188, MINUS_PLUS_ONE_TRAINING,
-				60, 1000 * 60);
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
+		statistics = train2("Logarithm", new ActivationLOG(), 11, MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
+				SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING, 60, 1000 * 60);
+		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 44, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING, 60,
-				1000 * 60);
+		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 162, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
 	public static void main(final String args[]) {
 		// prune();
-		// train1();
-		train2();
+		train1();
+		// train2();
 	}
 }
