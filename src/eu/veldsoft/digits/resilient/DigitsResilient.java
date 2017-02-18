@@ -235,9 +235,9 @@ public class DigitsResilient {
 	}
 
 	private static void train1() {
-		final double TARGET_ANN_ERROR = 0.01;
+		final double TARGET_ANN_ERROR = 0.1;
 		final long MAX_TRAINING_TIME = 10 * 60 * 1000;
-		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000 * 60;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000 * 1;
 
 		List<Object> statistics = null;
 
@@ -295,7 +295,7 @@ public class DigitsResilient {
 
 	public static void main(final String args[]) {
 		// prune();
-		// train1();
-		train2();
+		train1();
+		// train2();
 	}
 }
