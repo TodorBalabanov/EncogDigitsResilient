@@ -142,7 +142,7 @@ public class DigitsResilient {
 		 * Initial record.
 		 */ {
 			train.iteration();
-			Object record[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(train.getError()) };
+			Object record[] = { title, Long.valueOf(stopAtTime), Long.valueOf(0), Double.valueOf(train.getError()) };
 			result.add(record);
 		}
 
@@ -192,7 +192,7 @@ public class DigitsResilient {
 		 * Initial record.
 		 */ {
 			train.iteration();
-			Object record[] = { title, Long.valueOf(0), Long.valueOf(0), Double.valueOf(train.getError()) };
+			Object record[] = { title, Long.valueOf(stopAtTime), Long.valueOf(0), Double.valueOf(train.getError()) };
 			result.add(record);
 		}
 
