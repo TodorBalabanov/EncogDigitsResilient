@@ -142,7 +142,7 @@ public class DigitsResilient {
 		 * Initial record.
 		 */ {
 			train.iteration();
-			Object record[] = { title, Long.valueOf(stopAtTime), Long.valueOf(0), Double.valueOf(train.getError()) };
+			Object record[] = { title, Double.valueOf(train.getError()), Long.valueOf(stopAtTime), Long.valueOf(0) };
 			result.add(record);
 		}
 
@@ -155,8 +155,8 @@ public class DigitsResilient {
 				epoch++;
 			} while ((System.currentTimeMillis() - start) < stopAtTime);
 
-			Object record[] = { title, Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch),
-					Double.valueOf(train.getError()) };
+			Object record[] = { title, Double.valueOf(train.getError()),
+					Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch) };
 			result.add(record);
 		}
 
@@ -192,7 +192,7 @@ public class DigitsResilient {
 		 * Initial record.
 		 */ {
 			train.iteration();
-			Object record[] = { title, Long.valueOf(stopAtTime), Long.valueOf(0), Double.valueOf(train.getError()) };
+			Object record[] = { title, Double.valueOf(train.getError()), Long.valueOf(stopAtTime), Long.valueOf(0) };
 			result.add(record);
 		}
 
@@ -205,8 +205,8 @@ public class DigitsResilient {
 				epoch++;
 			} while ((System.currentTimeMillis() - start) < stopAtTime);
 
-			Object record[] = { title, Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch),
-					Double.valueOf(train.getError()) };
+			Object record[] = { title, Double.valueOf(train.getError()),
+					Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch) };
 			result.add(record);
 		}
 
@@ -293,9 +293,39 @@ public class DigitsResilient {
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
+	private static void train3() {
+		final int NUMBER_OF_MEASUREMENTS = 60;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000;
+
+		List<Object> statistics = null;
+
+		statistics = train2("Fading Sine", new ActivationFadingSin(0), 64, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 64,
+				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Sigmoid", new ActivationSigmoid(), 64, ZERO_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
+				SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Bipolar Sigmoid", new ActivationBipolarSteepenedSigmoid(), 64, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Logarithm", new ActivationLOG(), 64, MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
+				SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Hyperbolic Tangent", new ActivationTANH(), 64, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Elliott Symmetric", new ActivationElliottSymmetric(), 64, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+	}
+
 	public static void main(final String args[]) {
 		// prune();
-		train1();
+		// train1();
 		// train2();
+		train3();
 	}
 }
