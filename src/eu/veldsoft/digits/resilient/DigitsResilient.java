@@ -323,7 +323,7 @@ public class DigitsResilient {
 	}
 
 	private static void train4() {
-		final int NUMBER_OF_MEASUREMENTS = 60;
+		final int NUMBER_OF_MEASUREMENTS = 600;
 		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000;
 
 		List<Object> statistics = null;
