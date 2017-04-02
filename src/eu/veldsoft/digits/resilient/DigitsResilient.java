@@ -119,10 +119,10 @@ public class DigitsResilient {
 
 		ActivationFunction activations[] = { activation, activation, activation };
 
-		if (activation instanceof ActivationFadingSin) {
-			activations[0] = new ActivationFadingSin(INPUT_SIZE);
-			activations[1] = new ActivationFadingSin(optimalHiddenSize);
-			activations[2] = new ActivationFadingSin(OUTPUT_SIZE);
+		if (activation instanceof ActivationFadingSin1) {
+			activations[0] = new ActivationFadingSin1(INPUT_SIZE);
+			activations[1] = new ActivationFadingSin1(optimalHiddenSize);
+			activations[2] = new ActivationFadingSin1(OUTPUT_SIZE);
 		} else if (activation instanceof ActivationExponentRegulatedSin) {
 			activations[0] = new ActivationExponentRegulatedSin(INPUT_SIZE);
 			activations[1] = new ActivationExponentRegulatedSin(optimalHiddenSize);
@@ -169,10 +169,10 @@ public class DigitsResilient {
 
 		ActivationFunction activations[] = { activation, activation, activation };
 
-		if (activation instanceof ActivationFadingSin) {
-			activations[0] = new ActivationFadingSin(INPUT_SIZE);
-			activations[1] = new ActivationFadingSin(optimalHiddenSize);
-			activations[2] = new ActivationFadingSin(OUTPUT_SIZE);
+		if (activation instanceof ActivationFadingSin1) {
+			activations[0] = new ActivationFadingSin1(INPUT_SIZE);
+			activations[1] = new ActivationFadingSin1(optimalHiddenSize);
+			activations[2] = new ActivationFadingSin1(OUTPUT_SIZE);
 		} else if (activation instanceof ActivationExponentRegulatedSin) {
 			activations[0] = new ActivationExponentRegulatedSin(INPUT_SIZE);
 			activations[1] = new ActivationExponentRegulatedSin(optimalHiddenSize);
@@ -219,7 +219,7 @@ public class DigitsResilient {
 		final int PRUNE_ITERATIONS = 900;
 
 		BasicNetwork net = null;
-		net = prune("Fading Sine", new ActivationFadingSin(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
+		net = prune("Fading Sine", new ActivationFadingSin1(1), MINUS_PLUS_ONE_TRAINING, PRUNE_ITERATIONS, MIN_HIDDEN,
 				MAX_HIDDEN);
 		net = prune("Exponent Regulated Sine", new ActivationExponentRegulatedSin(1), MINUS_PLUS_ONE_TRAINING,
 				PRUNE_ITERATIONS, MIN_HIDDEN, MAX_HIDDEN);
@@ -241,10 +241,10 @@ public class DigitsResilient {
 
 		List<Object> statistics = null;
 
-		statistics = train1("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR,
+		statistics = train1("Fading Sine", new ActivationFadingSin1(1), 85, MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR,
 				MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train1("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
+		statistics = train1("Exponent Regulated Sine", new ActivationExponentRegulatedSin(1), 106,
 				MINUS_PLUS_ONE_TRAINING, TARGET_ANN_ERROR, MAX_TRAINING_TIME, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train1("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, TARGET_ANN_ERROR,
@@ -270,10 +270,10 @@ public class DigitsResilient {
 
 		List<Object> statistics = null;
 
-		statistics = train2("Fading Sine", new ActivationFadingSin(0), 85, MINUS_PLUS_ONE_TRAINING,
+		statistics = train2("Fading Sine", new ActivationFadingSin1(1), 85, MINUS_PLUS_ONE_TRAINING,
 				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 106,
+		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(1), 106,
 				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Sigmoid", new ActivationSigmoid(), 155, ZERO_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
@@ -299,10 +299,10 @@ public class DigitsResilient {
 
 		List<Object> statistics = null;
 
-		statistics = train2("Fading Sine", new ActivationFadingSin(0), 64, MINUS_PLUS_ONE_TRAINING,
+		statistics = train2("Fading Sine", new ActivationFadingSin1(1), 64, MINUS_PLUS_ONE_TRAINING,
 				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
-		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(0), 64,
+		statistics = train2("Exponent Regulated Sine", new ActivationExponentRegulatedSin(1), 64,
 				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 		statistics = train2("Sigmoid", new ActivationSigmoid(), 64, ZERO_ONE_TRAINING, NUMBER_OF_MEASUREMENTS,
@@ -322,10 +322,25 @@ public class DigitsResilient {
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
+	private static void train4() {
+		final int NUMBER_OF_MEASUREMENTS = 60;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000;
+
+		List<Object> statistics = null;
+
+		statistics = train2("Fading Sine Original Derivative", new ActivationFadingSin1(1), 64, MINUS_PLUS_ONE_TRAINING,
+				NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train2("Fading Sine Alternative Derivative", new ActivationFadingSin2(1), 64,
+				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+	}
+
 	public static void main(final String args[]) {
 		// prune();
 		// train1();
 		// train2();
-		train3();
+		// train3();
+		train4();
 	}
 }

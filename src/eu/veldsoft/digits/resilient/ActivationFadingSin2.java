@@ -4,11 +4,16 @@ import org.encog.engine.network.activation.ActivationFunction;
 import org.encog.engine.network.activation.ActivationSIN;
 import org.encog.mathutil.BoundMath;
 
-class ActivationFadingSin implements ActivationFunction {
+/**
+ * The alternative first derivative.
+ * 
+ * @author Todor Balabanov
+ */
+class ActivationFadingSin2 implements ActivationFunction {
 	private final ActivationSIN SIN = new ActivationSIN();
 	private double period = 1.0D;
 
-	public ActivationFadingSin(double period) {
+	public ActivationFadingSin2(double period) {
 		this.period = period;
 	}
 
@@ -26,16 +31,11 @@ class ActivationFadingSin implements ActivationFunction {
 
 	public double derivativeFunction(double before, double after) {
 		double x = before / period;
-
-		if (x < -Math.PI || x > Math.PI) {
-			return BoundMath.cos(x) / Math.abs(x) - BoundMath.sin(x) / (x * Math.abs(x));
-		} else {
-			return BoundMath.cos(x);
-		}
+		return BoundMath.exp(-(x * x));
 	}
 
 	public ActivationFunction clone() {
-		return new ActivationFadingSin(period);
+		return new ActivationFadingSin1(period);
 	}
 
 	public String getFactoryCode() {
