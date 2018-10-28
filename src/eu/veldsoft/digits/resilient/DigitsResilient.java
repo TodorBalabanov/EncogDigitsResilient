@@ -336,11 +336,15 @@ public class DigitsResilient {
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
+	private static void train5() {
+	}
+
 	public static void main(final String args[]) {
 		// prune();
 		// train1();
 		// train2();
 		// train3();
-		train4();
+		// train4();
+		train5();
 	}
 }
