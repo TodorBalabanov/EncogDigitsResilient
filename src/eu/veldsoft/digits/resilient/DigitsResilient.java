@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import org.encog.ConsoleStatusReportable;
 import org.encog.engine.network.activation.ActivationBipolarSteepenedSigmoid;
@@ -27,7 +28,15 @@ import org.encog.neural.prune.PruneIncremental;
 import org.encog.util.csv.CSVFormat;
 import org.encog.util.csv.ReadCSV;
 
+/**
+ * Single entry point class.
+ */
 public class DigitsResilient {
+	private static Random PRNG = new Random();
+
+	/**
+	 * How many experiments to be done.
+	 */
 	private static final int NUMBER_OF_EXPERIMENTS = 30;
 
 	private static final int INPUT_SIZE = 256;
@@ -110,6 +119,21 @@ public class DigitsResilient {
 		prune.process();
 
 		return prune.getBestNetwork();
+	}
+
+	private static void crossover(BasicNetwork first, BasicNetwork second) {
+		for (int l = 1; l < first.getLayerCount() && l < second.getLayerCount(); l++) {
+			for (int a = 0; a < first.getLayerNeuronCount(l - 1) && a < second.getLayerNeuronCount(l - 1); a++) {
+				for (int b = 0; b < first.getLayerNeuronCount(l) && b < second.getLayerNeuronCount(l); b++) {
+					if (PRNG.nextBoolean() == false) {
+						continue;
+					}
+
+					first.setWeight(l, a, b, 
+							second.getWeight(l, a, b));
+				}
+			}
+		}
 	}
 
 	private static List<Object> train1(String title, ActivationFunction activation, int optimalHiddenSize,
@@ -201,6 +225,54 @@ public class DigitsResilient {
 			} while ((System.currentTimeMillis() - start) < stopAtTime);
 
 			Object record[] = { title, Double.valueOf(train.getError()),
+					Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch) };
+			result.add(record);
+		}
+
+		return result;
+	}
+
+	private static List<Object> train3(String title, ActivationFunction[] activations, int optimalHiddenSize,
+			NeuralDataSet training, int numberOfStops, long stopAtTime) {
+		List<Object> result = new ArrayList<>();
+
+		BasicNetwork network1 = new BasicNetwork();
+		network1.addLayer(new BasicLayer(activations[0], true, INPUT_SIZE));
+		network1.addLayer(new BasicLayer(activations[0], true, optimalHiddenSize));
+		network1.addLayer(new BasicLayer(activations[0], false, OUTPUT_SIZE));
+		network1.getStructure().finalizeStructure();
+		network1.reset();
+
+		BasicNetwork network2 = new BasicNetwork();
+		network2.addLayer(new BasicLayer(activations[0], true, INPUT_SIZE));
+		network2.addLayer(new BasicLayer(activations[1], true, optimalHiddenSize));
+		network2.addLayer(new BasicLayer(activations[0], false, OUTPUT_SIZE));
+		network2.getStructure().finalizeStructure();
+		network2.reset();
+
+		final Train train1 = new ResilientPropagation(network1, training);
+		final Train train2 = new ResilientPropagation(network2, training);
+
+		/* Initial record. */ {
+			train1.iteration();
+			train2.iteration();
+			Object record[] = { title, Double.valueOf(train1.getError()), Long.valueOf(stopAtTime), Long.valueOf(0) };
+			result.add(record);
+		}
+
+		int epoch = 0;
+		for (long g = 0; g < numberOfStops; g++) {
+			long start = System.currentTimeMillis();
+
+			do {
+				train1.iteration();
+				train2.iteration();
+				crossover(network1, network2);
+
+				epoch++;
+			} while ((System.currentTimeMillis() - start) < stopAtTime);
+
+			Object record[] = { title, Double.valueOf(train1.getError()),
 					Long.valueOf((System.currentTimeMillis() - start)), Long.valueOf(epoch) };
 			result.add(record);
 		}
@@ -332,6 +404,19 @@ public class DigitsResilient {
 	}
 
 	private static void train5() {
+		final int NUMBER_OF_MEASUREMENTS = 600;
+		final long SINGLE_MEASUREMENT_MILLISECONDS = 1000;
+
+		List<Object> statistics = null;
+
+		statistics = train3("Pure Hyperbolic Tangent",
+				new ActivationFunction[] { new ActivationTANH(), new ActivationTANH() }, HIDDEN_SIZE,
+				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
+		statistics = train3("Mixed Hyperbolic Tangent and Sigmoid",
+				new ActivationFunction[] { new ActivationTANH(), new ActivationSigmoid() }, HIDDEN_SIZE,
+				MINUS_PLUS_ONE_TRAINING, NUMBER_OF_MEASUREMENTS, SINGLE_MEASUREMENT_MILLISECONDS);
+		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
 	public static void main(final String args[]) {
