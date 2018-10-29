@@ -28,7 +28,13 @@ import org.encog.neural.prune.PruneIncremental;
 import org.encog.util.csv.CSVFormat;
 import org.encog.util.csv.ReadCSV;
 
+/**
+ * Single entry point class.
+ */
 public class DigitsResilient {
+	/**
+	 * How many experiments to be done.
+	 */
 	private static final int NUMBER_OF_EXPERIMENTS = 30;
 
 	private static final int INPUT_SIZE = 256;
