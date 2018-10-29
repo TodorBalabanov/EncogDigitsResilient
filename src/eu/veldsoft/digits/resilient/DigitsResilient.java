@@ -3,7 +3,6 @@ package eu.veldsoft.digits.resilient;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.encog.ConsoleStatusReportable;
@@ -138,9 +137,7 @@ public class DigitsResilient {
 
 		final Train train = new ResilientPropagation(network, training);
 
-		/*
-		 * Initial record.
-		 */ {
+		/* Initial record. */ {
 			train.iteration();
 			Object record[] = { title, Double.valueOf(train.getError()), Long.valueOf(stopAtTime), Long.valueOf(0) };
 			result.add(record);
@@ -188,9 +185,7 @@ public class DigitsResilient {
 
 		final Train train = new ResilientPropagation(network, training);
 
-		/*
-		 * Initial record.
-		 */ {
+		/* Initial record. */ {
 			train.iteration();
 			Object record[] = { title, Double.valueOf(train.getError()), Long.valueOf(stopAtTime), Long.valueOf(0) };
 			result.add(record);
