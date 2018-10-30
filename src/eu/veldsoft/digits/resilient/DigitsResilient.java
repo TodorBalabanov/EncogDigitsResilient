@@ -1,3 +1,7 @@
+/*
+ * java -cp .:../lib/encog-core-3.3.0.jar eu/veldsoft/digits/resilient/DigitsResilient
+ */
+
 package eu.veldsoft.digits.resilient;
 
 import java.io.FileInputStream;
@@ -38,6 +42,8 @@ public class DigitsResilient {
 	 * How many experiments to be done.
 	 */
 	private static final int NUMBER_OF_EXPERIMENTS = 30;
+
+	private static final double CROSSOVER_RATE = 0.01;
 
 	private static final int INPUT_SIZE = 256;
 
@@ -125,12 +131,10 @@ public class DigitsResilient {
 		for (int l = 1; l < first.getLayerCount() && l < second.getLayerCount(); l++) {
 			for (int a = 0; a < first.getLayerNeuronCount(l - 1) && a < second.getLayerNeuronCount(l - 1); a++) {
 				for (int b = 0; b < first.getLayerNeuronCount(l) && b < second.getLayerNeuronCount(l); b++) {
-					if (PRNG.nextBoolean() == false) {
+					if (PRNG.nextDouble() < CROSSOVER_RATE) {
 						continue;
 					}
-
-					first.setWeight(l, a, b, 
-							second.getWeight(l, a, b));
+					first.setWeight(l - 1, b, a, second.getWeight(l - 1, a, b));
 				}
 			}
 		}
@@ -264,6 +268,7 @@ public class DigitsResilient {
 		for (long g = 0; g < numberOfStops; g++) {
 			long start = System.currentTimeMillis();
 
+			System.err.println("Progress " + g + " of " + numberOfStops + " ...");
 			do {
 				train1.iteration();
 				train2.iteration();
@@ -419,6 +424,12 @@ public class DigitsResilient {
 		System.out.println(Arrays.deepToString((Object[]) statistics.toArray()));
 	}
 
+	/**
+	 * Single entry point.
+	 * 
+	 * @param args
+	 *            Command line arguments.
+	 */
 	public static void main(final String args[]) {
 		// prune();
 		// train1();
